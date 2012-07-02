@@ -283,7 +283,8 @@ enum EM
   // Vitesse IQ2000
   EM_IQ2000 = 0xfeba,
   // NIOS
-  EM_NIOS32 = 0xfebb
+  EM_NIOS32 = 0xfebb,
+  EM_PATMOS = 48875  // T-CREST Patmos processor
   // Old AVR objects used 0x1057 (EM_AVR is correct).
   // Old MSP430 objects used 0x1059 (EM_MSP430 is correct).
   // Old FR30 objects used 0x3330 (EM_FR30 is correct).

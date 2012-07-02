@@ -1,0 +1,41 @@
+
+
+
+                             PATMOS GOLD README
+
+
+
+This is a port of the gold linker for the Patmos processor. We rely on LLVM as a 
+compiler, such that all system libraries are compiled to LLVM byte-code (LLVM 
+BC), the linker thus is expected to do only simple relocations. 
+
+
+--------------------------------------------------------------------------------
+1. Requirements
+
+ - actually nothing at all
+
+ - LLVM, Clang, and NewLib for Patmos (optional)
+   https://github.com/t-crest/patmos-llvm
+   https://github.com/t-crest/patmos-clang
+   https://github.com/t-crest/patmos-newlib
+
+
+
+--------------------------------------------------------------------------------
+2. Configure
+
+Just remember to give the two options below to ensure that gold is built:
+
+--enable-gold=yes --enable-ld=no
+
+--------------------------------------------------------------------------------
+3. Build and install
+
+That is simple:
+    make all-gold && make install-gold
+
+
+Have fun!
+
+
