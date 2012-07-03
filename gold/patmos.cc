@@ -289,14 +289,12 @@ namespace
     /// @param dst_mask a mask applied before patching the relocation.
     /// @param object the current object file
     /// @param psymval symbol to retrieve the address to patch the relocation
-    /// @param base relative base address (optional)
     /// @param shr shift the symbols'address to the right (optional)
     static inline void
     patch(unsigned char* view,
           elfcpp::Elf_Xword dst_mask,
           const Sized_relobj_file<32, true>* object,
           const Symbol_value<32>* psymval,
-          elfcpp::Elf_Xword base = 0,
           unsigned int shr = 0)
     {
       typedef elfcpp::Swap<32, true>::Valtype Valtype;
@@ -308,7 +306,7 @@ namespace
       Valtype val = elfcpp::Swap<32, true>::readval(wv);
 
       // compute the address used for the patching (including shifting)
-      Valtype reloc = (psymval->value(object, 0) - base) >> shr;
+      Valtype reloc = psymval->value(object, 0) >> shr;
 
       // apply the mask.
       val &= ~dst_mask;
@@ -323,10 +321,12 @@ namespace
     /// @param dst_mask a mask applied before patching the relocation.
     /// @param object the current object file
     /// @param address the address to patch
+    /// @param shr shift the symbols'address to the right (optional)
     static inline void
     patch(unsigned char* view,
           elfcpp::Elf_Xword dst_mask,
-          elfcpp::Elf_Xword address)
+          elfcpp::Elf_Xword address,
+          unsigned int shr = 0)
     {
       typedef elfcpp::Swap<32, true>::Valtype Valtype;
 
@@ -336,12 +336,15 @@ namespace
       // read the original value using the pointer
       Valtype val = elfcpp::Swap<32, true>::readval(wv);
 
+      // compute the address used for the patching (including shifting)
+      Valtype reloc = address >> shr;
+
       // apply the mask.
       val &= ~dst_mask;
-      address &= dst_mask;
+      reloc &= dst_mask;
 
       // rewrite the patched value
-      elfcpp::Swap<32, true>::writeval(wv, val | address);
+      elfcpp::Swap<32, true>::writeval(wv, val | reloc);
     }
   public:
     /// pflb_abs - patch an instruction of the PFLb format using 22 bits of
@@ -350,14 +353,14 @@ namespace
     pflb_abs(unsigned char* view,
              const Sized_relobj_file<32, true> *object,
              const Symbol_value<32>* psymval)
-    { patch(view, 0x3FFFFF, object, psymval); }
+    { patch(view, 0x3FFFFF, object, psymval, 2); }
 
     /// pflb_frel - patch an instruction of the PFLb format using 22 bits
     /// relative to the current function's base address.
     static inline void
     pflb_frel(unsigned char* view,
               elfcpp::Elf_Xword address)
-    {  patch(view, 0x3FFFFF, address); }
+    {  patch(view, 0x3FFFFF, address, 2); }
 
     /// alui_abs - patch an instruction of the ALUi format using 12 bits of
     /// the absolute address.
@@ -396,7 +399,7 @@ namespace
             const Sized_relobj_file<32, true> *object,
             const Symbol_value<32>* psymval,
             unsigned int shr  = 0)
-    { patch(view, 0x7F, object, psymval, 0, shr); }
+    { patch(view, 0x7F, object, psymval, shr); }
   };
 
   // Get the Reference_flags for a particular relocation.
