@@ -400,6 +400,24 @@ namespace
             const Symbol_value<32>* psymval,
             unsigned int shr  = 0)
     { patch(view, 0x7F, object, psymval, shr); }
+
+    /// abs - patch a 32-bit data field using the absolute address.
+    static inline void
+    abs(unsigned char* view,
+        const Sized_relobj_file<32, true> *object,
+        const Symbol_value<32>* psymval)
+    {
+      patch(view, 0xffffffff, object, psymval);
+    }
+
+    /// frel - patch a 32-bit data field using the address relative to the 
+    /// current function's base.
+    static inline void
+    frel(unsigned char* view,
+         elfcpp::Elf_Xword address)
+    {
+      patch(view, 0xffffffff, address);
+    }
   };
 
   // Get the Reference_flags for a particular relocation.
@@ -418,11 +436,12 @@ namespace
       case elfcpp::R_PATMOS_MEMB_ABS:
       case elfcpp::R_PATMOS_MEMH_ABS:
       case elfcpp::R_PATMOS_MEMW_ABS:
+      case elfcpp::R_PATMOS_ABS_32:
         return Symbol::ABSOLUTE_REF;
-
       case elfcpp::R_PATMOS_PFLB_FREL:
       case elfcpp::R_PATMOS_ALUI_FREL:
       case elfcpp::R_PATMOS_ALUL_FREL:
+      case elfcpp::R_PATMOS_FREL_32:
         return Symbol::RELATIVE_REF;
 
       default:
@@ -467,11 +486,13 @@ namespace
       case elfcpp::R_PATMOS_MEMB_ABS:
       case elfcpp::R_PATMOS_MEMH_ABS:
       case elfcpp::R_PATMOS_MEMW_ABS:
+      case elfcpp::R_PATMOS_ABS_32:
         break;
 
       case elfcpp::R_PATMOS_PFLB_FREL:
       case elfcpp::R_PATMOS_ALUI_FREL:
       case elfcpp::R_PATMOS_ALUL_FREL:
+      case elfcpp::R_PATMOS_FREL_32:
       {
         section_offset_type lsym_offset =
                               convert_to_section_size_type(lsym.get_st_value());
@@ -533,11 +554,13 @@ namespace
       case elfcpp::R_PATMOS_MEMB_ABS:
       case elfcpp::R_PATMOS_MEMH_ABS:
       case elfcpp::R_PATMOS_MEMW_ABS:
+      case elfcpp::R_PATMOS_ABS_32:
         break;
 
       case elfcpp::R_PATMOS_PFLB_FREL:
       case elfcpp::R_PATMOS_ALUI_FREL:
       case elfcpp::R_PATMOS_ALUL_FREL:
+      case elfcpp::R_PATMOS_FREL_32:
         // TODO: implement
         gold_assert(false && "Support for global FREL relocations missing.");
         break;
@@ -704,7 +727,11 @@ namespace
       case elfcpp::R_PATMOS_MEMW_ABS:
         Reloc::mem_abs(view, object, psymval, 2);
         break;
-
+      case elfcpp::R_PATMOS_ABS_32:
+        Reloc::abs(view, object, psymval);
+        break;
+      case elfcpp::R_PATMOS_FREL_32:
+        Reloc::frel(view, target->get_frel_address(rel, relinfo->data_shndx));
       default:
         gold_error_at_location(relinfo, relnum, rel.get_r_offset(),
                               _("unsupported reloc %u"),
