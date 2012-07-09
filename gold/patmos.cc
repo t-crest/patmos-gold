@@ -732,6 +732,7 @@ namespace
         break;
       case elfcpp::R_PATMOS_FREL_32:
         Reloc::frel(view, target->get_frel_address(rel, relinfo->data_shndx));
+        break;
       default:
         gold_error_at_location(relinfo, relnum, rel.get_r_offset(),
                               _("unsupported reloc %u"),
