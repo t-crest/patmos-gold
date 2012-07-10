@@ -309,6 +309,43 @@ namespace
       Valtype reloc = psymval->value(object, 0) >> shr;
 
       // apply the mask.
+      gold_assert((val & dst_mask) == 0);
+      val &= ~dst_mask;
+      reloc &= dst_mask;
+
+      // rewrite the patched value
+      elfcpp::Swap<32, true>::writeval(wv, val | reloc);
+    }
+
+    /// patch - patch data/instruction according to a relocation, assuming a 
+    /// non-zero addend.
+    /// @param view bytes of the data/instruction to be relocated.
+    /// @param dst_mask a mask applied before patching the relocation.
+    /// @param object the current object file
+    /// @param psymval symbol to retrieve the address to patch the relocation
+    /// @param shr shift the symbols'address to the right (optional)
+    static inline void
+    patch_withaddend(unsigned char* view,
+                     elfcpp::Elf_Xword dst_mask,
+                     const Sized_relobj_file<32, true>* object,
+                     const Symbol_value<32>* psymval,
+                     unsigned int shr = 0)
+    {
+      typedef elfcpp::Swap<32, true>::Valtype Valtype;
+
+      // get a pointer to the data/instruction bytes to be patched
+      Valtype* wv = reinterpret_cast<Valtype*>(view);
+
+      // read the original value using the pointer
+      Valtype val = elfcpp::Swap<32, true>::readval(wv);
+
+      // compute the addend
+      Valtype addend = (val & dst_mask);
+
+      // compute the address used for the patching (including shifting)
+      Valtype reloc = (psymval->value(object, 0) >> shr) + addend;
+
+      // apply the mask.
       val &= ~dst_mask;
       reloc &= dst_mask;
 
@@ -338,6 +375,42 @@ namespace
 
       // compute the address used for the patching (including shifting)
       Valtype reloc = address >> shr;
+
+      // apply the mask.
+      gold_assert((val & dst_mask) == 0);
+      val &= ~dst_mask;
+      reloc &= dst_mask;
+
+      // rewrite the patched value
+      elfcpp::Swap<32, true>::writeval(wv, val | reloc);
+    }
+
+    /// patch - patch data/instruction according to a relocation, assuming a 
+    /// non-zero addend.
+    /// @param view bytes of the data/instruction to be relocated.
+    /// @param dst_mask a mask applied before patching the relocation.
+    /// @param object the current object file
+    /// @param address the address to patch
+    /// @param shr shift the symbols'address to the right (optional)
+    static inline void
+    patch_withaddend(unsigned char* view,
+                     elfcpp::Elf_Xword dst_mask,
+                     elfcpp::Elf_Xword address,
+                     unsigned int shr = 0)
+    {
+      typedef elfcpp::Swap<32, true>::Valtype Valtype;
+
+      // get a pointer to the data/instruction bytes to be patched
+      Valtype* wv = reinterpret_cast<Valtype*>(view);
+
+      // read the original value using the pointer
+      Valtype val = elfcpp::Swap<32, true>::readval(wv);
+
+      // compute the addend
+      Valtype addend = (val & dst_mask);
+
+      // compute the address used for the patching (including shifting)
+      Valtype reloc = (address >> shr) + addend;
 
       // apply the mask.
       val &= ~dst_mask;
@@ -407,7 +480,7 @@ namespace
         const Sized_relobj_file<32, true> *object,
         const Symbol_value<32>* psymval)
     {
-      patch(view, 0xffffffff, object, psymval);
+      patch_withaddend(view, 0xffffffff, object, psymval);
     }
 
     /// frel - patch a 32-bit data field using the address relative to the 
@@ -416,7 +489,7 @@ namespace
     frel(unsigned char* view,
          elfcpp::Elf_Xword address)
     {
-      patch(view, 0xffffffff, address);
+      patch_withaddend(view, 0xffffffff, address);
     }
   };
 
