@@ -25,9 +25,10 @@ BC), the linker thus is expected to do only simple relocations.
 --------------------------------------------------------------------------------
 2. Configure
 
-Just remember to give the two options below to ensure that gold is built:
+Just remember to give those options below to ensure that gold is built and that
+the correct linker is used by patmos-clang:
 
---enable-gold=yes --enable-ld=no
+--program-prefix=patmos- --enable-gold=yes --enable-ld=no
 
 --------------------------------------------------------------------------------
 3. Build and install
