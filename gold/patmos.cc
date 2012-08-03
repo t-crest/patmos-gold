@@ -567,7 +567,7 @@ namespace
       case elfcpp::R_PATMOS_ALUL_FREL:
       case elfcpp::R_PATMOS_FREL_32:
       {
-        section_offset_type lsym_offset =
+        section_size_type lsym_offset =
                               convert_to_section_size_type(lsym.get_st_value());
         for(func_start_size_t::const_iterator i(target->Functions.begin()),
             ie(target->Functions.end()); i != ie; i++)
