@@ -26,15 +26,19 @@ BC), the linker thus is expected to do only simple relocations.
 2. Configure
 
 Just remember to give those options below to ensure that gold is built and that
-the correct linker is used by patmos-clang:
+the correct linker is used by patmos-clang. You also need to enable plugin
+support if gold should be able to link bitcode libraries.
 
---program-prefix=patmos- --enable-gold=yes --enable-ld=no
+--program-prefix=patmos- --enable-gold=yes --enable-ld=no --enable-plugins
 
 --------------------------------------------------------------------------------
 3. Build and install
 
 That is simple:
-    make all-gold && make install-gold
+    make all-gold install-gold
+
+To build ar and nm with plugin support for creating bitcode archives too, use:
+    make all install
 
 
 Have fun!
