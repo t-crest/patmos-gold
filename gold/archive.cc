@@ -667,8 +667,8 @@ Archive::get_elf_object_for_member(off_t off, bool* punconfigured)
   int read_size;
   if (!is_elf_object(input_file, memoff, &ehdr, &read_size))
     {
-      gold_error(_("%s: member at %zu is not an ELF object"),
-		 this->name().c_str(), static_cast<size_t>(off));
+      gold_error(_("%s: member %s at %zu is not an ELF object"),
+		 this->name().c_str(), member_name.c_str(), static_cast<size_t>(off));
       return NULL;
     }
 
