@@ -174,6 +174,9 @@ namespace
     // FIXME: this is shared state, and might be unsafe.
     frel_info_t FRELInfo;
 
+    func_start_size_t::const_iterator find_covering_function_or_code(
+                                           section_size_type lsym_offset) const;
+
     // The class which scans relocations.
 
     class Scan
@@ -536,6 +539,29 @@ namespace
 
   // Scan a relocation for a local symbol.
 
+  inline Target_Patmos::func_start_size_t::const_iterator
+  Target_Patmos::find_covering_function_or_code(
+                                            section_size_type lsym_offset) const
+  {
+    func_start_size_t::const_iterator found(Functions.end());
+    for(func_start_size_t::const_iterator i(Functions.begin()),
+        ie(Functions.end()); i != ie; i++)
+    {
+      // the label might be covered by a @function or @code region,
+      // take the smaller one, i.e., the @code.
+      if (i->first <= lsym_offset && lsym_offset <= i->first + i->second &&
+          (found == ie || found->first <= i->first))
+      {
+        found = i;
+      }
+    }
+
+    gold_assert(found != Functions.end());
+
+    return found;
+  }
+
+  
   inline void
   Target_Patmos::Scan::local(
                              Symbol_table* symtab __attribute__((unused)),
@@ -548,6 +574,7 @@ namespace
                              unsigned int r_type,
                              const elfcpp::Sym<32, true>& lsym)
   {
+    bool is_PFLB = false;
     switch (r_type)
       {
       case elfcpp::R_PATMOS_NONE:
@@ -563,24 +590,42 @@ namespace
         break;
 
       case elfcpp::R_PATMOS_PFLB_FREL:
+        is_PFLB = true;
       case elfcpp::R_PATMOS_ALUI_FREL:
       case elfcpp::R_PATMOS_ALUL_FREL:
       case elfcpp::R_PATMOS_FREL_32:
       {
         section_size_type lsym_offset =
                               convert_to_section_size_type(lsym.get_st_value());
-        for(func_start_size_t::const_iterator i(target->Functions.begin()),
-            ie(target->Functions.end()); i != ie; i++)
-        {
-          if (i->first <= lsym_offset && lsym_offset <= i->first + i->second)
-          {
-            // keep info on this relocation around for the patching later
-            target->FRELInfo.insert(std::make_pair(
-                                      std::make_pair(reloc.get_r_offset(),
-                                                     data_shndx),
-                                      (lsym_offset - i->first)));
-          }
+
+        func_start_size_t::const_iterator lsym_cover(
+                           target->find_covering_function_or_code(lsym_offset));
+
+        // keep info on this relocation around for the patching later
+        if (is_PFLB && (reloc.get_r_offset() < lsym_cover->first ||
+               lsym_cover->first + lsym_cover->second < reloc.get_r_offset())) {
+          // crossing from one code region into another, e.g., using a b
+          // instruction
+          gold_assert(lsym_offset == lsym_cover->first);
+
+          // find the current code region
+          func_start_size_t::const_iterator rel_cover(
+                  target->find_covering_function_or_code(reloc.get_r_offset()));
+
+          target->FRELInfo.insert(std::make_pair(
+                                    std::make_pair(reloc.get_r_offset(),
+                                                  data_shndx),
+                                    (lsym_offset - rel_cover->first)));
         }
+        else {
+          // we stay within the same code region, e.g., using a bc
+          // instruction.
+          target->FRELInfo.insert(std::make_pair(
+                                    std::make_pair(reloc.get_r_offset(),
+                                                  data_shndx),
+                                    (lsym_offset - lsym_cover->first)));
+        }
+
         break;
       }
 
@@ -710,7 +755,8 @@ namespace
     for(size_t i = 0; i < local_symbol_count; i++)
     {
       elfcpp::Sym<32, true> lsym(plocal_symbols + i * sym_size);
-      if (lsym.get_st_type() == elfcpp::STT_FUNC)
+      if (lsym.get_st_type() == elfcpp::STT_FUNC ||
+          lsym.get_st_type() == elfcpp::STT_CODE)
       {
         section_offset_type value = convert_to_section_size_type(lsym.get_st_value());
         section_size_type fnsize = convert_to_section_size_type(lsym.get_st_size());
@@ -933,7 +979,7 @@ namespace
   void
   Target_Patmos::append_function(const Sized_symbol<32> *sym)
   {
-    if (sym->is_func())
+    if (sym->is_func() || sym->type() == elfcpp::STT_CODE)
     {
       Functions.push_back(std::make_pair(sym->value(), sym->symsize()));
     }

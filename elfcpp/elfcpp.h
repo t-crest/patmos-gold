@@ -526,7 +526,10 @@ enum STT
 
   // ARM: a THUMB function.  This is not defined in ARM ELF Specification but
   // used by the GNU tool-chain.
-  STT_ARM_TFUNC = 13
+  STT_ARM_TFUNC = 13,
+
+  // Patmos: method-cache-cacheable code
+  STT_CODE      = 13
 };
 
 inline STB
