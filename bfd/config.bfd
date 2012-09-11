@@ -94,6 +94,7 @@ mips*)		 targ_archs=bfd_mips_arch ;;
 or32*)		 targ_archs=bfd_or32_arch ;;
 pdp11*)		 targ_archs=bfd_pdp11_arch ;;
 pj*)		 targ_archs="bfd_pj_arch bfd_i386_arch";;
+patmos*)	 targ_archs="bfd_i386_arch" ;;
 powerpc*)	 targ_archs="bfd_rs6000_arch bfd_powerpc_arch" ;;
 rs6000)		 targ_archs="bfd_rs6000_arch bfd_powerpc_arch" ;;
 s390*)		 targ_archs=bfd_s390_arch ;;
@@ -1085,6 +1086,10 @@ case "${targ}" in
     targ_selvecs="bfd_elf32_pjl_vec bfd_elf32_pj_vec bfd_elf32_i386_vec"
     ;;
 
+  patmos-*-elf)
+    targ_defvec=plugin_vec
+    targ_selvecs="plugin_vec bfd_elf32_i386_vec"
+    ;;
   powerpc-*-aix5.[01] | rs6000-*-aix5.[01])
     targ_defvec=rs6000coff_vec
     targ_selvecs="aix5coff64_vec"

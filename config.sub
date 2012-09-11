@@ -289,6 +289,7 @@ case $basic_machine in
 	| open8 \
 	| or32 \
 	| pdp10 | pdp11 | pj | pjl \
+	| patmos \
 	| powerpc | powerpc64 | powerpc64le | powerpcle \
 	| pyramid \
 	| rx \
@@ -398,6 +399,7 @@ case $basic_machine in
 	| open8-* \
 	| orion-* \
 	| pdp10-* | pdp11-* | pj-* | pjl-* | pn-* | power-* \
+	| patmos-* \
 	| powerpc-* | powerpc64-* | powerpc64le-* | powerpcle-* \
 	| pyramid-* \
 	| romp-* | rs6000-* | rx-* \

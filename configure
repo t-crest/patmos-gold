@@ -2874,7 +2874,7 @@ case "${ENABLE_GOLD}" in
     if test "$is_elf" = "yes"; then
       # Check for target supported by gold.
       case "${target}" in
-        i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-*)
+        i?86-*-* | x86_64-*-* | sparc*-*-* | patmos-*-* | powerpc*-*-* | arm*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
@@ -3518,6 +3518,9 @@ case "${target}" in
     ;;
   mt-*-*)
     noconfigdirs="$noconfigdirs sim"
+    ;;
+  patmos-*-*)
+    noconfigdirs="$noconfigdirs ld gas gprof"
     ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry

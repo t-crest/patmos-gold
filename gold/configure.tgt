@@ -72,6 +72,14 @@ x86_64*)
     ;;
   esac
   ;;
+patmos*)
+  targ_obj=patmos
+  targ_machine=EM_PATMOS
+  targ_size=32
+  targ_extra_size=32
+  targ_big_endian=true
+  targ_extra_big_endian=false
+  ;;
 sparc-*)
   targ_obj=sparc
   targ_machine=EM_SPARC

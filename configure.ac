@@ -955,6 +955,9 @@ case "${target}" in
   mt-*-*)
     noconfigdirs="$noconfigdirs sim"
     ;;
+  patmos-*-*)
+    noconfigdirs="$noconfigdirs ld gas gprof"
+    ;;
   powerpc-*-aix*)
     # copied from rs6000-*-* entry
     noconfigdirs="$noconfigdirs gprof"
