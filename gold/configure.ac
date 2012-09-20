@@ -407,6 +407,7 @@ AM_CONDITIONAL(IFUNC_STATIC, test "$gold_cv_lib_glibc_ifunc" = "both")
 AM_BINUTILS_WARNINGS
 
 WARN_CXXFLAGS=`echo ${WARN_CFLAGS} | sed -e 's/-Wstrict-prototypes//' -e 's/-Wmissing-prototypes//' -e 's/-Wshadow//'`
+WARN_CXXFLAGS="$WARN_CXXFLAGS -Wno-narrowing"
 AC_SUBST(WARN_CXXFLAGS)
 
 dnl Force support for large files by default.  This may need to be
