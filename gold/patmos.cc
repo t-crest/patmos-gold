@@ -423,20 +423,33 @@ namespace
       elfcpp::Swap<32, true>::writeval(wv, val | reloc);
     }
   public:
-    /// pflb_abs - patch an instruction of the PFLb format using 22 bits of
+    /// cflb_abs - patch an instruction of the CFLb format using 22 bits of
     /// the absolute address.
     static inline void
-    pflb_abs(unsigned char* view,
+    cflb_abs(unsigned char* view,
              const Sized_relobj_file<32, true> *object,
              const Symbol_value<32>* psymval)
     { patch(view, 0x3FFFFF, object, psymval, 2); }
 
-    /// pflb_frel - patch an instruction of the PFLb format using 22 bits
+    /// cflb_frel - patch an instruction of the CFLb format using 22 bits
     /// relative to the current function's base address.
     static inline void
-    pflb_frel(unsigned char* view,
+    cflb_frel(unsigned char* view,
               elfcpp::Elf_Xword address)
     {  patch(view, 0x3FFFFF, address, 2); }
+
+    /// cflb_pcrel - patch an instruction of the CFLb format using 22 bits
+    /// relative to the current function's base address.
+    static inline void
+    cflb_pcrel(unsigned char* view,
+              const Sized_relobj_file<32, true> *object,
+              const Symbol_value<32>* psymval,
+	      elfcpp::Elf_types<32>::Elf_Addr address)
+    {  
+      elfcpp::Elf_Xword reloc = (psymval->value(object, 0) - address);
+      patch(view, 0x3FFFFF, reloc, 2); 
+    }
+
 
     /// alui_abs - patch an instruction of the ALUi format using 12 bits of
     /// the absolute address.
@@ -506,7 +519,7 @@ namespace
       case elfcpp::R_PATMOS_NONE:
         // No symbol reference.
         return 0;
-      case elfcpp::R_PATMOS_PFLB_ABS:
+      case elfcpp::R_PATMOS_CFLB_ABS:
       case elfcpp::R_PATMOS_ALUI_ABS:
       case elfcpp::R_PATMOS_ALUL_ABS:
       case elfcpp::R_PATMOS_MEMB_ABS:
@@ -514,7 +527,8 @@ namespace
       case elfcpp::R_PATMOS_MEMW_ABS:
       case elfcpp::R_PATMOS_ABS_32:
         return Symbol::ABSOLUTE_REF;
-      case elfcpp::R_PATMOS_PFLB_FREL:
+      case elfcpp::R_PATMOS_CFLB_FREL:
+      case elfcpp::R_PATMOS_CFLB_PCREL:
       case elfcpp::R_PATMOS_ALUI_FREL:
       case elfcpp::R_PATMOS_ALUL_FREL:
       case elfcpp::R_PATMOS_FREL_32:
@@ -574,13 +588,13 @@ namespace
                              unsigned int r_type,
                              const elfcpp::Sym<32, true>& lsym)
   {
-    bool is_PFLB = false;
+    bool is_CFLB = false;
     switch (r_type)
       {
       case elfcpp::R_PATMOS_NONE:
         break;
 
-      case elfcpp::R_PATMOS_PFLB_ABS:
+      case elfcpp::R_PATMOS_CFLB_ABS:
       case elfcpp::R_PATMOS_ALUI_ABS:
       case elfcpp::R_PATMOS_ALUL_ABS:
       case elfcpp::R_PATMOS_MEMB_ABS:
@@ -588,9 +602,12 @@ namespace
       case elfcpp::R_PATMOS_MEMW_ABS:
       case elfcpp::R_PATMOS_ABS_32:
         break;
-
-      case elfcpp::R_PATMOS_PFLB_FREL:
-        is_PFLB = true;
+      
+      case elfcpp::R_PATMOS_CFLB_PCREL:
+	break;
+	
+      case elfcpp::R_PATMOS_CFLB_FREL:
+        is_CFLB = true;
       case elfcpp::R_PATMOS_ALUI_FREL:
       case elfcpp::R_PATMOS_ALUL_FREL:
       case elfcpp::R_PATMOS_FREL_32:
@@ -602,7 +619,7 @@ namespace
                            target->find_covering_function_or_code(lsym_offset));
 
         // keep info on this relocation around for the patching later
-        if (is_PFLB && (reloc.get_r_offset() < lsym_cover->first ||
+        if (is_CFLB && (reloc.get_r_offset() < lsym_cover->first ||
                lsym_cover->first + lsym_cover->second < reloc.get_r_offset())) {
           // crossing from one code region into another, e.g., using a b
           // instruction
@@ -666,7 +683,7 @@ namespace
       case elfcpp::R_PATMOS_NONE:
         break;
 
-      case elfcpp::R_PATMOS_PFLB_ABS:
+      case elfcpp::R_PATMOS_CFLB_ABS:
       case elfcpp::R_PATMOS_ALUI_ABS:
       case elfcpp::R_PATMOS_ALUL_ABS:
       case elfcpp::R_PATMOS_MEMB_ABS:
@@ -675,7 +692,10 @@ namespace
       case elfcpp::R_PATMOS_ABS_32:
         break;
 
-      case elfcpp::R_PATMOS_PFLB_FREL:
+      case elfcpp::R_PATMOS_CFLB_PCREL:
+	break;
+	
+      case elfcpp::R_PATMOS_CFLB_FREL:
       case elfcpp::R_PATMOS_ALUI_FREL:
       case elfcpp::R_PATMOS_ALUL_FREL:
       case elfcpp::R_PATMOS_FREL_32:
@@ -804,7 +824,7 @@ namespace
                           const Sized_symbol<32>* gsym __attribute__((unused)),
                           const Symbol_value<32>* psymval,
                           unsigned char* view,
-                          elfcpp::Elf_types<32>::Elf_Addr address  __attribute__((unused)),
+                          elfcpp::Elf_types<32>::Elf_Addr address,
                           section_size_type view_size __attribute__((unused)))
   {
     typedef Patmos_relocate_functions Reloc;
@@ -816,11 +836,11 @@ namespace
       case elfcpp::R_PATMOS_NONE:
         break;
 
-      case elfcpp::R_PATMOS_PFLB_ABS:
-        Reloc::pflb_abs(view, object, psymval);
+      case elfcpp::R_PATMOS_CFLB_ABS:
+        Reloc::cflb_abs(view, object, psymval);
         break;
-      case elfcpp::R_PATMOS_PFLB_FREL:
-        Reloc::pflb_frel(view, target->get_frel_address(rel,
+      case elfcpp::R_PATMOS_CFLB_FREL:
+        Reloc::cflb_frel(view, target->get_frel_address(rel,
                                                         relinfo->data_shndx));
         break;
       case elfcpp::R_PATMOS_ALUI_ABS:
@@ -852,6 +872,9 @@ namespace
       case elfcpp::R_PATMOS_FREL_32:
         Reloc::frel(view, target->get_frel_address(rel, relinfo->data_shndx));
         break;
+      case elfcpp::R_PATMOS_CFLB_PCREL:
+	Reloc::cflb_pcrel(view, object, psymval, address);
+	break;
       default:
         gold_error_at_location(relinfo, relnum, rel.get_r_offset(),
                               _("unsupported reloc %u"),
