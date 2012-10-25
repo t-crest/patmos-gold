@@ -439,7 +439,7 @@ namespace
     {  patch(view, 0x3FFFFF, address, 2); }
 
     /// cflb_pcrel - patch an instruction of the CFLb format using 22 bits
-    /// relative to the current function's base address.
+    /// relative to the current instruction address.
     static inline void
     cflb_pcrel(unsigned char* view,
               const Sized_relobj_file<32, true> *object,
