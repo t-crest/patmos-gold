@@ -126,6 +126,7 @@ maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
 case $maybe_os in
   nto-qnx* | linux-gnu* | linux-android* | linux-dietlibc | linux-newlib* | \
   linux-uclibc* | uclinux-uclibc* | uclinux-gnu* | kfreebsd*-gnu* | \
+  unknown-elf | \
   knetbsd*-gnu* | netbsd*-gnu* | \
   kopensolaris*-gnu* | \
   storm-chaos* | os2-emx* | rtmk-nova*)
@@ -238,6 +239,9 @@ case $os in
 	-mint | -mint[0-9]*)
 		basic_machine=m68k-atari
 		os=-mint
+		;;
+	-unknown-elf)
+		os=-elf
 		;;
 esac
 
@@ -1565,6 +1569,9 @@ case $basic_machine in
 	or32-*)
 		os=-coff
 		;;
+	patmos-*)
+		os=-elf
+		;;
 	*-tti)	# must be before sparc entry or we get the wrong os.
 		os=-sysv3
 		;;
@@ -1672,6 +1679,21 @@ case $basic_machine in
 		;;
 esac
 fi
+
+# Handle some machine-specific OS names
+case $basic_machine in
+	patmos-*)
+	    case $os in
+		    -elf)
+			# For patmos, we use '-unknown-elf' instead of '-elf' for programs on 
+			# bare metal. Clang wants it so.
+			# TODO check if this is really necessary/allowed. It seems to work 
+			#      without this hack as well.
+			os=-unknown-elf
+			;;
+	    esac
+	    ;;
+esac
 
 # Here we handle the case where we know the os, and the CPU type, but not the
 # manufacturer.  We pick the logical manufacturer.
