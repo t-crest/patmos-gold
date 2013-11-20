@@ -107,11 +107,12 @@ typedef union YYSTYPE
 #line 114 "deffilep.y"
 {
   char *id;
+  const char *id_const;
   int number;
   char *digits;
 }
 /* Line 1529 of yacc.c.  */
-#line 115 "deffilep.h"
+#line 116 "deffilep.h"
 	YYSTYPE;
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1

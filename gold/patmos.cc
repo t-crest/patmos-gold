@@ -138,7 +138,8 @@ namespace
                             const unsigned char* prelocs,
                             size_t reloc_count,
                             Output_section* output_section,
-                            off_t offset_in_output_section,
+                            elfcpp::Elf_types<32>::Elf_Off 
+                              offset_in_output_section,
                             const Relocatable_relocs*,
                             unsigned char* view,
                             elfcpp::Elf_types<32>::Elf_Addr view_address,
@@ -276,6 +277,8 @@ namespace
     0x00001000,           // default_text_segment_address
     0x1000,               // abi_pagesize (overridable by -z max-page-size)
     0x1000,               // common_pagesize (overridable by -z common-page-size)
+    false,                // isolate_execinstr
+    0,                    // rosegment_gap
     elfcpp::SHN_UNDEF,    // small_common_shndx
     elfcpp::SHN_UNDEF,    // large_common_shndx
     0,                    // small_common_section_flags
@@ -283,7 +286,7 @@ namespace
     NULL,                 // attributes_section
     NULL                  // attributes_vendor
   };
-
+  
   class Patmos_relocate_functions
   {
   private:
@@ -975,7 +978,7 @@ namespace
       const unsigned char* prelocs,
       size_t reloc_count,
       Output_section* output_section,
-      off_t offset_in_output_section,
+      elfcpp::Elf_types<32>::Elf_Off offset_in_output_section,
       const Relocatable_relocs* rr,
       unsigned char* view,
       elfcpp::Elf_types<32>::Elf_Addr view_address,
