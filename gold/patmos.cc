@@ -133,19 +133,19 @@ namespace
     // like relocate_section, with additional parameters for the view of
     // the output reloc section.
     virtual void
-    relocate_for_relocatable(const Relocate_info<32, true>*,
-                            unsigned int sh_type,
-                            const unsigned char* prelocs,
-                            size_t reloc_count,
-                            Output_section* output_section,
-                            elfcpp::Elf_types<32>::Elf_Off 
-                              offset_in_output_section,
-                            const Relocatable_relocs*,
-                            unsigned char* view,
-                            elfcpp::Elf_types<32>::Elf_Addr view_address,
-                            section_size_type view_size,
-                            unsigned char* reloc_view,
-                            section_size_type reloc_view_size);
+    relocate_relocs(const Relocate_info<32, true>*,
+                    unsigned int sh_type,
+                    const unsigned char* prelocs,
+                    size_t reloc_count,
+                    Output_section* output_section,
+                    elfcpp::Elf_types<32>::Elf_Off 
+                      offset_in_output_section,
+                    const Relocatable_relocs*,
+                    unsigned char* view,
+                    elfcpp::Elf_types<32>::Elf_Addr view_address,
+                    section_size_type view_size,
+                    unsigned char* reloc_view,
+                    section_size_type reloc_view_size);
 
     /// check if the symbol is a function, if so, store its start address and
     /// size.
@@ -195,7 +195,7 @@ namespace
             unsigned int data_shndx,
             Output_section* output_section,
             const elfcpp::Rel<32, true>& reloc, unsigned int r_type,
-            const elfcpp::Sym<32, true>& lsym);
+            const elfcpp::Sym<32, true>& lsym, bool is_discarded);
 
       inline void
       global(Symbol_table* symtab, Layout* layout, Target_Patmos* target,
@@ -284,7 +284,8 @@ namespace
     0,                    // small_common_section_flags
     0,                    // large_common_section_flags
     NULL,                 // attributes_section
-    NULL                  // attributes_vendor
+    NULL,                 // attributes_vendor
+    "_start"              // entry_symbol_name
   };
   
   class Patmos_relocate_functions
@@ -589,8 +590,12 @@ namespace
                              Output_section* output_section __attribute__((unused)),
                              const elfcpp::Rel<32, true>& reloc,
                              unsigned int r_type,
-                             const elfcpp::Sym<32, true>& lsym)
+                             const elfcpp::Sym<32, true>& lsym, 
+                             bool is_discarded)
   {
+    if (is_discarded) 
+      return;
+    
     bool is_CFLB = false;
     switch (r_type)
       {
@@ -906,7 +911,7 @@ namespace
     gold_assert(sh_type == elfcpp::SHT_REL);
 
     gold::relocate_section<32, true, Target_Patmos, elfcpp::SHT_REL,
-      Target_Patmos::Relocate>(
+      Target_Patmos::Relocate, gold::Default_comdat_behavior>(
       relinfo,
       this,
       prelocs,
@@ -972,7 +977,7 @@ namespace
   // Relocate a section during a relocatable link.
 
   void
-  Target_Patmos::relocate_for_relocatable(
+  Target_Patmos::relocate_relocs(
       const Relocate_info<32, true>* relinfo,
       unsigned int sh_type,
       const unsigned char* prelocs,
@@ -988,7 +993,7 @@ namespace
   {
     gold_assert(sh_type == elfcpp::SHT_REL);
 
-    gold::relocate_for_relocatable<32, true, elfcpp::SHT_REL>(
+    gold::relocate_relocs<32, true, elfcpp::SHT_REL>(
       relinfo,
       prelocs,
       reloc_count,
