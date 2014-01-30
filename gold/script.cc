@@ -2547,12 +2547,13 @@ Version_script_info::print_expression_list(
     fprintf(f, "      }\n");
 }
 
-} // End namespace gold.
-
-// The remaining functions are extern "C", so it's clearer to not put
+// Previously the remaining functions were not declared in namespace gold
+// because they are extern "C"., so it's clearer to not put
 // them in namespace gold.
-
-using namespace gold;
+// However, the functions have been declared in namespace gold
+// in script-c.h; this discrepancy triggers an exotic clang bug,
+// that was fixed only recently (#7927).
+// Therefore, we now define these functions in the gold namespace.
 
 // This function is called by the bison parser to return the next
 // token.
@@ -3407,3 +3408,5 @@ script_exp_function_length(void* closurev, const char* name, size_t namelen)
 
   return length;
 }
+
+} // End namespace gold.
