@@ -173,7 +173,7 @@ Object_merge_map::get_output_offset(const Merge_map* merge_map,
     }
 
   if (input_offset - p->input_offset
-      >= static_cast<section_offset_type>(p->length))
+      > static_cast<section_offset_type>(p->length))
     return false;
 
   *output_offset = p->output_offset;
