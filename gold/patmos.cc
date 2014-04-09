@@ -147,6 +147,10 @@ namespace
                     unsigned char* reloc_view,
                     section_size_type reloc_view_size);
 
+    // Return a string used to fill a code section with nops.
+    virtual std::string
+    do_code_fill(section_size_type length) const;
+
     /// check if the symbol is a function, if so, store its start address and
     /// size.
     void append_function(const Sized_symbol<32> *);
@@ -1005,6 +1009,14 @@ namespace
       view_size,
       reloc_view,
       reloc_view_size);
+  }
+
+  std::string
+  Target_Patmos::do_code_fill(section_size_type length) const
+  {
+    // TODO this decodes into a valid NOP instruction, but
+    //      it would be nicer to emit the usual NOP code.
+    return std::string(length, static_cast<char>(0x00));
   }
 
   void
