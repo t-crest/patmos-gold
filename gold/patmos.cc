@@ -278,7 +278,7 @@ namespace
     true,                 // can_icf_inline_merge_sections
     '\0',                 // wrap_char
     "",                   // dynamic_linker
-    0x00001000,           // default_text_segment_address
+    0x00020000,           // default_text_segment_address
     0x1000,               // abi_pagesize (overridable by -z max-page-size)
     0x1000,               // common_pagesize (overridable by -z common-page-size)
     false,                // isolate_execinstr
